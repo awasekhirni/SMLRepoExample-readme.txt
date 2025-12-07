@@ -1,32 +1,26 @@
-
-VIEW CustomerOrderSummary
+INDEX idx_orders_customer_status_date
+  ON: Orders
   SEMANTICS:
-    PURPOSE: "Aggregate customer order metrics for reporting"
-    MATERIALIZATION: "Refresh daily at 02:00 UTC"
-    FRESHNESS_REQUIREMENT: "24 hours maximum"
-    CONSUMERS: ["BI Dashboard", "CRM System", "Marketing Platform"]
+    PURPOSE: "Optimize customer order history queries"
+    QUERY_PATTERNS:
+      - "WHERE customer_id = ? AND status = ?"
+      - "WHERE customer_id = ? AND order_date BETWEEN ? AND ?"
+      - "ORDER BY order_date DESC LIMIT N"
   
   DEFINITION:
-    SOURCE_TABLES: ["Customers", "Orders", "OrderItems"]
-    JOIN_LOGIC: "Left outer join for all customers"
-    AGGREGATION: "SUM, COUNT, AVG by customer"
+    COLUMNS: ["customer_id", "status", "order_date DESC"]
+    TYPE: "BTREE"
+    UNIQUE: FALSE
+    INCLUDE_COLUMNS: ["order_id", "total_amount", "payment_status"]
   
-  COLUMNS:
-    customer_id: "UUID from Customers"
-    total_orders: "COUNT(DISTINCT order_id)"
-    total_spent: "SUM(amount_paid)"
-    avg_order_value: "AVG(amount_paid)"
-    last_order_date: "MAX(order_date)"
-    favorite_category: "MODE() within group of product categories"
+  MAINTENANCE:
+    REBUILD_THRESHOLD: "When bloat > 40%"
+    STATISTICS: "autovacuum_analyze_scale_factor = 0.05"
+    PARALLEL_WORKERS: 4
   
-  PERFORMANCE:
-    INDEXES_USED: 
-      - "idx_orders_customer_date"
-      - "idx_customers_tenant"
-    QUERY_TIMEOUT: "30 seconds"
-    RESULT_CACHING: "2 hours"
-  
-  SECURITY:
-    INHERITS_PERMISSIONS: "FROM underlying tables"
-    DYNAMIC_MASKING: "Excludes PII columns"
-END_VIEW
+  MONITORING:
+    USAGE_METRICS:
+      - "scans_per_day"
+      - "rows_fetched_vs_returned_ratio"
+    EFFICIENCY_ALERT: "WHEN index_scans < 1% of total_scans THEN consider removal"
+END_INDEX
