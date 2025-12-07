@@ -1,0 +1,19 @@
+ARCHITECTURE
+  PATTERN: "Microservices with Shared Database"
+  DECOMPOSITION:
+    SERVICE_BOUNDARIES:
+      - "Customer Service → Customers, Addresses"
+      - "Order Service → Orders, OrderItems"
+      - "Inventory Service → Products, Stock"
+      - "Payment Service → Transactions, Invoices"
+  
+  DATA_FLOW:
+    DIRECTION: "Event-driven with CDC"
+    CONSISTENCY_MODEL: "Strong consistency for core, eventual for analytics"
+    PARTITIONING_STRATEGY: "Sharding by tenant_id"
+  
+  SCALABILITY:
+    READ_REPLICAS: 3
+    WRITE_NODES: 2
+    CACHING_LAYER: "Redis with 5-minute TTL"
+END_ARCHITECTURE
