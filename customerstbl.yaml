@@ -1,0 +1,89 @@
+TABLE Customers
+  SEMANTICS:
+    ENTITY_TYPE: "Root Aggregate"
+    BUSINESS_DEFINITION: "Registered users of the e-commerce platform"
+    LIFECYCLE_STATES: ["PROSPECT", "ACTIVE", "SUSPENDED", "TERMINATED"]
+    OWNER: "Customer Relations Team"
+    DOMAIN: "Customer Management"
+  
+  ATTRIBUTES:
+    customer_id: UUID
+      SEMANTIC_TYPE: "Natural Identifier"
+      IMMUTABLE: TRUE
+      GENERATION: "uuid_generate_v4()"
+      SECURITY_CLASS: "PII"
+    
+    email: VARCHAR(255)
+      SEMANTIC_TYPE: "Business Identifier"
+      UNIQUE: TRUE
+      VALIDATION: "RFC 5322 email format"
+      ENCRYPTION: "AES-256 at rest"
+    
+    created_at: TIMESTAMPTZ
+      SEMANTIC_TYPE: "Event Timestamp"
+      DEFAULT: "NOW()"
+      TIMEZONE: "UTC"
+    
+    status: VARCHAR(20)
+      SEMANTIC_TYPE: "State Indicator"
+      DOMAIN_VALUES: ["active", "inactive", "banned"]
+      DEFAULT: "active"
+  
+  RELATIONSHIPS:
+    HAS_MANY:
+      - Orders (1:N via customer_id)
+      - Addresses (1:N via customer_id)
+    
+    BELONGS_TO:
+      - Tenant (N:1 via tenant_id)
+  
+  CONSTRAINTS:
+    BUSINESS_RULES:
+      - "Customer must have verified email before first order"
+      - "Active customers cannot be deleted"
+      - "Email changes require re-verification"
+    
+    VALIDATION_RULES:
+      - "phone_number REGEXP '^[+]?[0-9]{10,15}$'"
+      - "birth_date < CURRENT_DATE - INTERVAL '13 years'"
+  
+  OPERATIONS:
+    ALLOWED_ACTIONS:
+      CREATE: ["customer_service", "registration_service"]
+      READ: ["customer_service", "order_service", "auth_service"]
+      UPDATE: ["customer_service"]
+      DELETE: ["admin_service"]  -- Soft delete only
+    
+    TRANSACTION_ISOLATION: "READ COMMITTED"
+    CONCURRENCY: "Optimistic locking via version column"
+  
+  PERFORMANCE:
+    INDEXES:
+      - "idx_customers_email (email) UNIQUE"
+      - "idx_customers_tenant_status (tenant_id, status)"
+      - "idx_customers_created (created_at DESC)"
+    
+    PARTITIONING: "BY RANGE (created_at)"
+    VACUUM_SETTINGS: "autovacuum_vacuum_scale_factor = 0.01"
+  
+  SECURITY:
+    DATA_MASKING:
+      - "email → '***' for analytics users"
+      - "phone_number → NULL for support staff"
+    
+    ACCESS_CONTROL:
+      ROW_LEVEL_SECURITY: "tenant_id = current_tenant()"
+      COLUMN_PRIVILEGES:
+        - "ssn: HR department only"
+        - "credit_score: Underwriting team only"
+  
+  MONITORING:
+    METRICS:
+      - "row_count_growth_per_day"
+      - "avg_row_size_bytes"
+      - "dead_tuple_percentage"
+    
+    ALERTS:
+      - "WHEN fragmentation > 30% THEN reorganize"
+      - "WHEN table_size > 50GB THEN partition"
+END_TABLE
