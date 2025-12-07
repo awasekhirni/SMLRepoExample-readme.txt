@@ -1,0 +1,21 @@
+DOMAIN email_address
+  SEMANTICS:
+    PURPOSE: "Standardized email validation across all tables"
+    FORMAT: "RFC 5322 compliant"
+    MAX_LENGTH: 254
+  
+  BASE_TYPE: VARCHAR(254)
+  CONSTRAINT: "VALUE ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'"
+  COLLATION: "case-insensitive"
+  DEFAULT: NULL
+  
+  USAGE:
+    APPLIED_TO:
+      - "Customers.email"
+      - "Users.username"
+      - "NewsletterSubscriptions.address"
+  
+  SECURITY:
+    ENCRYPTION_REQUIRED: TRUE
+    MASKING_RULE: "Show only first 3 chars and domain"
+END_DOMAIN
