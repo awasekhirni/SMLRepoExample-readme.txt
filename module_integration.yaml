@@ -1,0 +1,19 @@
+MODULE_INTEGRATION
+  DATA_FLOW:
+    Customer → [creates] → Order → [contains] → OrderItem → [references] → Product
+  
+  TRANSACTION_BOUNDARIES:
+    - "Customer registration: Single transaction"
+    - "Order placement: Saga pattern with compensation"
+    - "Inventory update: Two-phase commit"
+  
+  CONSISTENCY_RULES:
+    - "Customer must exist before order"
+    - "Product must have stock > 0"
+    - "Order total = sum(OrderItem subtotals)"
+  
+  PERFORMANCE_TARGETS:
+    - "Order creation: < 200ms p95"
+    - "Customer lookup: < 50ms p99"
+    - "Product search: < 100ms p95"
+END_INTEGRATION
