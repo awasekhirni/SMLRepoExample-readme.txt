@@ -1,0 +1,9 @@
+MODULE DatabaseSystem
+  CONTEXT
+    DOMAIN: "E-commerce Platform"
+    SCOPE: "Core transactional database"
+    VERSION: "1.0"
+    ENVIRONMENT: "Production PostgreSQL 15"
+    DATA_SENSITIVITY: "PII Level 2, PCI DSS Compliant"
+    RETENTION_POLICY: "7 years for orders, 3 years for logs"
+END_CONTEXT
