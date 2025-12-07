@@ -1,0 +1,21 @@
+CONSTRAINT ck_order_amount_positive
+  TYPE: CHECK
+  ON: Orders
+  SEMANTICS:
+    PURPOSE: "Ensure business validity of order amounts"
+    BUSINESS_RULE: "Order total must be positive for completed orders"
+    ERROR_SEVERITY: "ERROR (prevents invalid data)"
+  
+  DEFINITION:
+    CONDITION: "total_amount > 0 OR status = 'cancelled'"
+    VALIDATED: TRUE
+    DEFERRABLE: FALSE
+  
+  EXCEPTION_HANDLING:
+    ERROR_MESSAGE: "Order amount must be positive for non-cancelled orders"
+    ERROR_CODE: "23514"
+  
+  MAINTENANCE:
+    VALIDATION_SCHEDULE: "Real-time on INSERT/UPDATE"
+    DISABLE_ALLOWED: "Only during data correction by DBA"
+END_CONSTRAINT
