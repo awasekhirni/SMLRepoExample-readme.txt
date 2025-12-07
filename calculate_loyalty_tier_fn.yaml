@@ -1,0 +1,46 @@
+FUNCTION calculate_loyalty_tier
+  SEMANTICS:
+    PURPOSE: "Determine customer loyalty tier based on purchase history"
+    BUSINESS_LOGIC: "Tiered loyalty program with quarterly evaluation"
+    INVOCATION: "Trigger-based on order completion"
+    DETERMINISTIC: TRUE
+  
+  PARAMETERS:
+    p_customer_id: UUID [INPUT, REQUIRED]
+    p_evaluation_date: DATE [INPUT, OPTIONAL, DEFAULT: CURRENT_DATE]
+  
+  LOGIC:
+    CALCULATION:
+      1. "Sum purchases in last 365 days"
+      2. "Count orders in last quarter"
+      3. "Check for returns rate < 5%"
+      4. "Apply tier rules"
+    
+    TIER_RULES:
+      - "BRONZE: $0 - $999"
+      - "SILVER: $1,000 - $4,999"
+      - "GOLD: $5,000 - $9,999"
+      - "PLATINUM: $10,000+"
+  
+  PERFORMANCE:
+    EXECUTION_TIME: "< 100ms"
+    MEMORY_USAGE: "Work_mem = 16MB"
+    PARALLEL_SAFE: TRUE
+  
+  ERROR_HANDLING:
+    EXCEPTIONS:
+      - "NO_DATA_FOUND: Return NULL"
+      - "TOO_MANY_ROWS: Use latest record"
+      - "CUSTOM: 'Invalid customer state'"
+    
+    RETRY_LOGIC: "3 attempts with exponential backoff"
+  
+  DEPENDENCIES:
+    TABLES: ["Orders", "Returns", "Customers"]
+    FUNCTIONS: ["get_customer_status", "validate_transaction_date"]
+  
+  SECURITY:
+    DEFINER: "postgres"
+    EXECUTION_CONTEXT: "SECURITY INVOKER"
+    ACCESS: "GRANT EXECUTE TO authenticated_users"
+END_FUNCTION
