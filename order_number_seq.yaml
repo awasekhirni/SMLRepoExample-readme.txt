@@ -1,0 +1,26 @@
+SEQUENCE order_number_seq
+  SEMANTICS:
+    PURPOSE: "Generate unique, sortable order numbers"
+    FORMAT: "YYYYMMDD-######"
+    GUARANTEES: "Monotonically increasing within day"
+    COLLISION_PROBABILITY: "< 0.0001%"
+  
+  CONFIGURATION:
+    START: 100000
+    INCREMENT: 1
+    MIN: 100000
+    MAX: 999999
+    CYCLE: FALSE
+    CACHE: 50
+  
+  USAGE:
+    ASSIGNED_TO: "Orders.order_number"
+    GENERATION_LOGIC: 
+      - "TO_CHAR(CURRENT_DATE, 'YYYYMMDD') || '-' || LPAD(nextval('order_number_seq')::TEXT, 6, '0')"
+    
+    RESET_SCHEDULE: "Daily at 00:00 UTC"
+  
+  SECURITY:
+    PERMISSIONS: "GRANT USAGE TO order_service ONLY"
+    AUDIT: "Log every 1000th allocation"
+END_SEQUENCE
