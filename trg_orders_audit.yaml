@@ -1,0 +1,33 @@
+TRIGGER trg_orders_audit
+  ON: Orders
+  SEMANTICS:
+    PURPOSE: "Maintain audit trail for all order modifications"
+    COMPLIANCE: "SOX Section 404, GDPR Article 30"
+    RETENTION: "7 years minimum"
+  
+  CONFIGURATION:
+    EVENT: "AFTER INSERT OR UPDATE OR DELETE"
+    TIMING: "FOR EACH ROW"
+    CONDITION: "OLD.* IS DISTINCT FROM NEW.*"
+  
+  ACTIONS:
+    EXECUTE: "audit_log_procedure"
+    PARAMETERS:
+      - "table_name = 'orders'"
+      - "operation = TG_OP"
+      - "user_id = current_user"
+      - "old_data = OLD"
+      - "new_data = NEW"
+      - "ip_address = inet_client_addr()"
+  
+  PERFORMANCE:
+    OVERHEAD: "< 5ms per operation"
+    BULK_OPTIMIZED: "TRUE for batch operations"
+    DISABLE_ALLOWED: "Only for data migrations"
+  
+  MONITORING:
+    METRICS:
+      - "trigger_invocations_per_hour"
+      - "average_execution_time_ms"
+    ALERT: "WHEN execution_time > 100ms"
+END_TRIGGER
