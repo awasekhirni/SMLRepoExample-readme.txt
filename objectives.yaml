@@ -1,0 +1,19 @@
+OBJECTIVES
+  BUSINESS_GOALS:
+    - "Support 1M+ concurrent users"
+    - "99.99% availability"
+    - "Sub-100ms query response"
+    - "ACID compliance for transactions"
+  
+  DATA_QUALITY:
+    - "Zero data loss guarantee"
+    - "Referential integrity enforcement"
+    - "Audit trail for all modifications"
+    - "Real-time data consistency"
+  
+  COMPLIANCE:
+    - "GDPR Article 30 record-keeping"
+    - "CCPA data portability"
+    - "HIPAA for health-related products"
+    - "SOX compliance for financial records"
+END_OBJECTIVES
